@@ -100,10 +100,6 @@ app.get('/secret', (req, res, next) => {
     let bearerToken = bearerHeader.split(" ")[1]
     jwt.verify(bearerToken, 'chicken', (err, data) => {
       if (err) { res.send(err)}
-<<<<<<< HEAD
-=======
-      console.log(data);
->>>>>>> b7e5e4c9736f2f8f2ce4d197d77bcbbd9988cac0
       res.json({
         description: "Protected information woohoo",
         data,
