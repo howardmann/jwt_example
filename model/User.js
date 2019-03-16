@@ -15,7 +15,7 @@ User.find = () => {
   return Promise.resolve(USERS_DB)
 }
 
-User.findById = (id) => {
-  let user = USERS_DB.filter(el => el.id == id)[0]
+User.findBy = (key, value) => {
+  let user = USERS_DB.filter(el => el[key] == value)[0]
   return Promise.resolve(user)
 }
