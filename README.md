@@ -110,5 +110,52 @@ app.get('/secret', (req, res, next) => {
   }  
 })
 
+```
+
+We can also refactor this logic into a `verifyToken` middleware handler
+```javascript
+// Middleware: Verify bearer token and JWT auth. Add to req auth
+function verifyToken (req, res, next) {
+  // Extract the bearer token from the header
+  let bearerHeader = req.headers["authorization"]
+  if (typeof bearerHeader !== 'undefined') {
+    // authorization: bearer abcdefghij123
+    let bearerToken = bearerHeader.split(" ")[1]
+    
+    // verify token and attach auth data to req.auth and call next or send 403
+    jwt.verify(bearerToken, SECRET_KEY, (err, data) => {
+      if (err) {
+        res.send(403) // forbidden
+      }
+      req.token = bearerToken
+      req.auth = data
+      //call next middleware
+      next()
+    })
+  } else {
+    res.send(403) // forbidden
+  }
+}
+
+// Then use it as middleware in our routes. The req will only pass through to the protected routes if the token is verified
+app.get('/secret', verifyToken, (req, res, next) => {
+  let auth = req.auth
+
+  res.json({
+    description: "protected information",
+    auth
+  })
+})
+
+// Here we can extract specific auth data such as the email and could do subsequent DB authorization checks
+app.get('/moresecret', verifyToken, (req, res, next) => {
+  let {email} = req.auth
+
+  res.json({
+    answer: 42,
+    email 
+  })
+})
+
 
 ```

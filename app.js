@@ -57,24 +57,46 @@ app.post('/login', (req, res, next) => {
     })  
 })
 
-app.get('/secret', (req, res, next) => {
+app.get('/secret', verifyToken, (req, res, next) => {
+  let auth = req.auth
+
+  res.json({
+    description: "protected information",
+    auth
+  })
+})
+
+app.get('/moresecret', verifyToken, (req, res, next) => {
+  let {email} = req.auth
+
+  res.json({
+    answer: 42,
+    email 
+  })
+})
+
+// Middleware: Verify bearer token and JWT auth. Add to req auth
+function verifyToken (req, res, next) {
   // Extract the bearer token from the header
   let bearerHeader = req.headers["authorization"]
   if (typeof bearerHeader !== 'undefined') {
+    // authorization: bearer abcdefghij123
     let bearerToken = bearerHeader.split(" ")[1]
+    
+    // verify token and attach auth data to req.auth and call next or send 403
     jwt.verify(bearerToken, SECRET_KEY, (err, data) => {
-      if (err) { res.send(err)}
-      console.log(data);
-      res.json({
-        description: "Protected information woohoo",
-        data,
-      })
+      if (err) {
+        res.send(403) // forbidden
+      }
+      req.token = bearerToken
+      req.auth = data
+      //call next middleware
+      next()
     })
   } else {
-    res.send(403)
+    res.send(403) // forbidden
   }
-  
-})
+}
 
 const PORT = 3000
 app.listen(PORT, () => {
